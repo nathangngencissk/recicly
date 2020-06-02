@@ -1,1 +1,3 @@
 # recicly
+
+Main application repository
