@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: "Recicly"
+
+Globals:
+  Function:
+    CodeUri: "../recicly/"
+    Runtime: "python3.7"
+    MemorySize: 128
+    Timeout: 60
+    Environment:
+      Variables:
+        ENVIRONMENT: "production"
+        REGION: !Ref AWS::Region
+        ACCOUNT_ID: !Ref AWS::AccountId
+        PASSWORD: "{{resolve:ssm:/recicly/rds/password:1}}"
+        URL: "{{resolve:ssm:/recicly/rds/url:1}}"
+
+Resources:
+  # IAM
+  ExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-api-execution-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+        - PolicyName: "EventBus"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "events:PutEvents"
+                Resource: "*"
+
+  # API
+  Api:
+    Type: "AWS::Serverless::Api"
+    Properties:
+      StageName: "Prod"
+
+  GetAllUsers:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-users"
+      Handler: "handlers.user.get_all.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        GetAllUsersApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /user/get_all
+            Method: get
+
+  AddUser:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-add-user"
+      Handler: "handlers.user.add.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        AddUserApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /user/add
+            Method: post
