@@ -9,19 +9,18 @@ from utils.database import Database
 def handle(event, context):
     body = json.loads(event.get('body'))
 
-    user = User(**body)
+    id = body.get('id')
+
+    user = User(id=id)
 
     db = Database()
 
-    db.add(user)
-
-    user.__dict__.pop('_sa_instance_state')
+    db.delete(user)
 
     response = {
         'statusCode': 200,
         'body': json.dumps({
-            'user': user.__dict__,
-            'msg': f'User {user.id} added successfully'
+            'msg': f'User with id {id} deleted successfully'
         }),
     }
 

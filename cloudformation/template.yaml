@@ -49,6 +49,7 @@ Resources:
     Properties:
       StageName: "Prod"
 
+  # User
   GetAllUsers:
     Type: "AWS::Serverless::Function"
     Properties:
@@ -60,7 +61,21 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref Api
-            Path: /user/get_all
+            Path: /user/get-all
+            Method: get
+
+  GetUser:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-user"
+      Handler: "handlers.user.get.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        GetAllUsersApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /user/get
             Method: get
 
   AddUser:
@@ -76,3 +91,101 @@ Resources:
             RestApiId: !Ref Api
             Path: /user/add
             Method: post
+
+  UpdateUser:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-update-user"
+      Handler: "handlers.user.update.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        AddUserApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /user/update
+            Method: put
+
+  DeleteUser:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-delete-user"
+      Handler: "handlers.user.delete.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        AddUserApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /user/delete
+            Method: delete
+  # Driver
+  GetAllDrivers:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-drivers"
+      Handler: "handlers.driver.get_all.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        GetAllUsersApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /driver/get-all
+            Method: get
+
+  GetDriver:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-driver"
+      Handler: "handlers.driver.get.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        GetAllUsersApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /driver/get
+            Method: get
+
+  AddDriver:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-add-driver"
+      Handler: "handlers.driver.add.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        AddUserApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /driver/add
+            Method: post
+
+  UpdateDriver:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-update-driver"
+      Handler: "handlers.driver.update.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        AddUserApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /driver/update
+            Method: put
+
+  DeleteDriver:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-delete-driver"
+      Handler: "handlers.driver.delete.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        AddUserApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /driver/delete
+            Method: delete

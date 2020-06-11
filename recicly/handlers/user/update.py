@@ -13,15 +13,15 @@ def handle(event, context):
 
     db = Database()
 
-    db.add(user)
+    updated_user = db.update(user)
 
-    user.__dict__.pop('_sa_instance_state')
+    updated_user.__dict__.pop('_sa_instance_state')
 
     response = {
         'statusCode': 200,
         'body': json.dumps({
-            'user': user.__dict__,
-            'msg': f'User {user.id} added successfully'
+            'user': updated_user.__dict__,
+            'msg': f'User {updated_user.id} updated successfully'
         }),
     }
 

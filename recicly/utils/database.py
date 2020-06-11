@@ -50,34 +50,52 @@ class Database():
         Session = sessionmaker(self.db)
         return Session()
 
-    def get_all(self, table):
+    def get_all(self, table, as_dict=False):
         with self.session() as session:
-            return [Database.element_to_dict(result) for result in session.query(table)]
+            elements = [Database.element_to_dict(result) for result in session.query(
+                table)] if as_dict else [result for result in session.query(table)]
+            session.expunge_all()
+            return elements
 
-    def get(self, table, id):
+    def get(self, table, id, as_dict=False):
         with self.session() as session:
-            return Database.element_to_dict(session.query(table).get(id))
+            element = Database.element_to_dict(session.query(table).get(
+                id)) if as_dict else session.query(table).get(id)
+            session.expunge_all()
+            return element
 
     def add(self, element):
         with self.session() as session:
             session.add(element)
+            session.commit()
+            session.refresh(element)
+            session.expunge_all()
 
     def update(self, element):
         table = type(element)
         with self.session() as session:
+            updated_element = session.query(table).get(element.id)
             mapped_values = {}
             for attribute in element.__dict__:
                 if attribute not in ['_sa_instance_state', 'id']:
                     mapped_values[attribute] = element.__dict__.get(
                         attribute)
-
             session.query(table).filter(
                 table.id == element.id).update(mapped_values)
             session.commit()
+            session.refresh(updated_element)
+            session.expunge_all()
+            return updated_element
 
     def delete(self, element):
         table = type(element)
         with self.session() as session:
             session.query(table).filter(table.id == element.id).delete(
                 synchronize_session='evaluate')
-            session.commit()
+
+    def query(self, table, query):
+        with self.session() as session:
+            elements = [Database.element_to_dict(
+                result) for result in session.query(table).filter(query)]
+            session.expunge_all()
+            return

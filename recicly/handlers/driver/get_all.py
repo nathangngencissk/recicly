@@ -1,16 +1,16 @@
 import json
 
 from utils.database import Database
-from model.user import User
+from model.driver import Driver
 
 
 def handle(event, context):
     db = Database()
-    users = db.get_all(User, as_dict=True)
+    drivers = db.get_all(Driver, as_dict=True)
 
     response = {
         'statusCode': 200,
-        'body': json.dumps(users),
+        'body': json.dumps(drivers),
     }
 
     return response

@@ -2,26 +2,26 @@ import json
 
 import requests
 
-from model.user import User
+from model.driver import Driver
 from utils.database import Database
 
 
 def handle(event, context):
     body = json.loads(event.get('body'))
 
-    user = User(**body)
+    driver = Driver(**body)
 
     db = Database()
 
-    db.add(user)
+    updated_driver = db.update(driver)
 
-    user.__dict__.pop('_sa_instance_state')
+    updated_driver.__dict__.pop('_sa_instance_state')
 
     response = {
         'statusCode': 200,
         'body': json.dumps({
-            'user': user.__dict__,
-            'msg': f'User {user.id} added successfully'
+            'user': updated_driver.__dict__,
+            'msg': f'Driver {updated_driver.id} updated successfully'
         }),
     }
 

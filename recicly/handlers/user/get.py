@@ -5,12 +5,18 @@ from model.user import User
 
 
 def handle(event, context):
+
+    queryStringParameters = event.get('queryStringParameters')
+
+    id = queryStringParameters.get('id')
+
     db = Database()
-    users = db.get_all(User, as_dict=True)
+
+    user = db.get(User, id=id, as_dict=True)
 
     response = {
         'statusCode': 200,
-        'body': json.dumps(users),
+        'body': json.dumps(user),
     }
 
     return response
