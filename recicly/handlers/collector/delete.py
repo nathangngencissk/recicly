@@ -2,26 +2,25 @@ import json
 
 import requests
 
-from model.driver import Driver
+from model.collector import Collector
 from utils.database import Database
 
 
 def handle(event, context):
     body = json.loads(event.get('body'))
 
-    driver = Driver(**body)
+    id = body.get('id')
+
+    collector = Collector(id=id)
 
     db = Database()
 
-    db.add(driver)
-
-    driver.__dict__.pop('_sa_instance_state')
+    db.delete(collector)
 
     response = {
         'statusCode': 200,
         'body': json.dumps({
-            'driver': driver.__dict__,
-            'msg': f'Driver {driver.id} added successfully'
+            'msg': f'Collector with id {id} deleted successfully'
         }),
     }
 

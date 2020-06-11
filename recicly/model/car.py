@@ -1,10 +1,22 @@
+from sqlalchemy import Table, Column, String, Boolean, Integer, MetaData, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
+
+from utils.database import Database
+from model.driver import Driver
 
 
-class Car():
+base = declarative_base()
 
-    def __init__(self, id, id_driver, brand, model, color):
-        self.id = id
-        self.id_driver = id_driver
-        self.brand = brand
-        self.model = model
-        self.color = color
+
+class Car(base):
+
+    __tablename__ = 'cars'
+
+    id = Column(Integer, primary_key=True)
+    id_driver = Column(Integer, ForeignKey('Driver.id'))
+    brand = Column(String)
+    model = Column(String)
+    color = Column(String)
+
+    driver = relationship('Driver', back_populates='cars')

@@ -4,6 +4,10 @@ from datetime import date, datetime, timedelta
 from decimal import Decimal
 
 
+def object_to_dict(element):
+    return {c.name: getattr(element, c.name) for c in element.__table__.columns}
+
+
 def flatten(d, parent_key='', sep='.'):
     """Flattens a dictionary"""
 

@@ -20,7 +20,7 @@ def handle(event, context):
     response = {
         'statusCode': 200,
         'body': json.dumps({
-            'user': updated_driver.__dict__,
+            'driver': updated_driver.__dict__,
             'msg': f'Driver {updated_driver.id} updated successfully'
         }),
     }

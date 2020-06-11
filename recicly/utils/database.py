@@ -5,6 +5,8 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
+from utils import object_to_dict
+
 
 class Database():
 
@@ -17,10 +19,6 @@ class Database():
 
         db_string = f'postgres://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}'
         self.db = create_engine(db_string)
-
-    @classmethod
-    def element_to_dict(self, element):
-        return {c.name: getattr(element, c.name) for c in element.__table__.columns}
 
     @contextmanager
     def connect(self):
@@ -52,14 +50,14 @@ class Database():
 
     def get_all(self, table, as_dict=False):
         with self.session() as session:
-            elements = [Database.element_to_dict(result) for result in session.query(
+            elements = [object_to_dict(result) for result in session.query(
                 table)] if as_dict else [result for result in session.query(table)]
             session.expunge_all()
             return elements
 
     def get(self, table, id, as_dict=False):
         with self.session() as session:
-            element = Database.element_to_dict(session.query(table).get(
+            element = object_to_dict(session.query(table).get(
                 id)) if as_dict else session.query(table).get(id)
             session.expunge_all()
             return element
@@ -95,7 +93,7 @@ class Database():
 
     def query(self, table, query):
         with self.session() as session:
-            elements = [Database.element_to_dict(
+            elements = [object_to_dict(
                 result) for result in session.query(table).filter(query)]
             session.expunge_all()
             return

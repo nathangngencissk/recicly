@@ -57,7 +57,7 @@ Resources:
       Handler: "handlers.user.get_all.handle"
       Role: !GetAtt ExecutionRole.Arn
       Events:
-        GetAllUsersApi:
+        ApiEnpoint:
           Type: Api
           Properties:
             RestApiId: !Ref Api
@@ -71,7 +71,7 @@ Resources:
       Handler: "handlers.user.get.handle"
       Role: !GetAtt ExecutionRole.Arn
       Events:
-        GetAllUsersApi:
+        ApiEnpoint:
           Type: Api
           Properties:
             RestApiId: !Ref Api
@@ -85,7 +85,7 @@ Resources:
       Handler: "handlers.user.add.handle"
       Role: !GetAtt ExecutionRole.Arn
       Events:
-        AddUserApi:
+        ApiEnpoint:
           Type: Api
           Properties:
             RestApiId: !Ref Api
@@ -99,7 +99,7 @@ Resources:
       Handler: "handlers.user.update.handle"
       Role: !GetAtt ExecutionRole.Arn
       Events:
-        AddUserApi:
+        ApiEnpoint:
           Type: Api
           Properties:
             RestApiId: !Ref Api
@@ -113,12 +113,13 @@ Resources:
       Handler: "handlers.user.delete.handle"
       Role: !GetAtt ExecutionRole.Arn
       Events:
-        AddUserApi:
+        ApiEnpoint:
           Type: Api
           Properties:
             RestApiId: !Ref Api
             Path: /user/delete
             Method: delete
+
   # Driver
   GetAllDrivers:
     Type: "AWS::Serverless::Function"
@@ -127,7 +128,7 @@ Resources:
       Handler: "handlers.driver.get_all.handle"
       Role: !GetAtt ExecutionRole.Arn
       Events:
-        GetAllUsersApi:
+        ApiEnpoint:
           Type: Api
           Properties:
             RestApiId: !Ref Api
@@ -141,7 +142,7 @@ Resources:
       Handler: "handlers.driver.get.handle"
       Role: !GetAtt ExecutionRole.Arn
       Events:
-        GetAllUsersApi:
+        ApiEnpoint:
           Type: Api
           Properties:
             RestApiId: !Ref Api
@@ -155,7 +156,7 @@ Resources:
       Handler: "handlers.driver.add.handle"
       Role: !GetAtt ExecutionRole.Arn
       Events:
-        AddUserApi:
+        ApiEnpoint:
           Type: Api
           Properties:
             RestApiId: !Ref Api
@@ -169,7 +170,7 @@ Resources:
       Handler: "handlers.driver.update.handle"
       Role: !GetAtt ExecutionRole.Arn
       Events:
-        AddUserApi:
+        ApiEnpoint:
           Type: Api
           Properties:
             RestApiId: !Ref Api
@@ -183,9 +184,151 @@ Resources:
       Handler: "handlers.driver.delete.handle"
       Role: !GetAtt ExecutionRole.Arn
       Events:
-        AddUserApi:
+        ApiEnpoint:
           Type: Api
           Properties:
             RestApiId: !Ref Api
             Path: /driver/delete
+            Method: delete
+
+  # Collector
+  GetAllCollectors:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-collectors"
+      Handler: "handlers.collector.get_all.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /collector/get-all
+            Method: get
+
+  GetCollector:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-collector"
+      Handler: "handlers.collector.get.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /collector/get
+            Method: get
+
+  AddCollector:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-add-collector"
+      Handler: "handlers.collector.add.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /collector/add
+            Method: post
+
+  UpdateCollector:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-update-collector"
+      Handler: "handlers.collector.update.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /collector/update
+            Method: put
+
+  DeleteCollector:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-delete-collector"
+      Handler: "handlers.collector.delete.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /collector/delete
+            Method: delete
+
+  # Car
+  GetAllCars:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-cars"
+      Handler: "handlers.car.get_all.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /car/get-all
+            Method: get
+
+  GetCar:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-car"
+      Handler: "handlers.car.get.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /car/get
+            Method: get
+
+  AddCar:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-add-car"
+      Handler: "handlers.car.add.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /car/add
+            Method: post
+
+  UpdateCar:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-update-car"
+      Handler: "handlers.car.update.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /car/update
+            Method: put
+
+  DeleteCar:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-delete-car"
+      Handler: "handlers.car.delete.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /car/delete
             Method: delete

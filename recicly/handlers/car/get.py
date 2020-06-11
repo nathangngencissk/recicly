@@ -1,8 +1,7 @@
 import json
 
 from utils.database import Database
-from utils import object_to_dict
-from model.driver import Driver
+from model.driver import Car
 
 
 def handle(event, context):
@@ -13,14 +12,11 @@ def handle(event, context):
 
     db = Database()
 
-    driver = db.get(Driver, id=id)
+    car = db.get(Car, id=id, as_dict=True)
 
     response = {
         'statusCode': 200,
-        'body': json.dumps({
-            'driver': object_to_dict(driver),
-            'cars': driver.get_cars()
-        }),
+        'body': json.dumps(car)
     }
 
     return response

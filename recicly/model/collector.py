@@ -1,9 +1,18 @@
+from sqlalchemy import Table, Column, String, Boolean, Integer, MetaData
+from sqlalchemy.ext.declarative import declarative_base
+
+from utils.database import Database
+from model.person import Person
 
 
-class Collector():
+base = declarative_base()
 
-    def __init__(self, id, name, email, password):
-        self.id = id
-        self.name = name
-        self.email = email
-        self.password = password
+
+class Collector(base):
+
+    __tablename__ = 'collectors'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    email = Column(String)
+    password = Column(String)
