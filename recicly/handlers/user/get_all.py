@@ -1,7 +1,7 @@
 import json
 
 from utils.database import Database
-from model.user import User
+from model import User
 
 
 def handle(event, context):

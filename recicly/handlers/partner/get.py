@@ -1,7 +1,8 @@
 import json
 
 from utils.database import Database
-from model import User
+from utils import object_to_dict
+from model import Partner
 
 
 def handle(event, context):
@@ -12,11 +13,14 @@ def handle(event, context):
 
     db = Database()
 
-    user = db.get(User, id=id, as_dict=True)
+    partner = db.get(Partner, id=id)
 
     response = {
         'statusCode': 200,
-        'body': json.dumps(user),
+        'body': json.dumps({
+            'partner': object_to_dict(partner),
+            'products': partner.get_products()
+        }),
     }
 
     return response

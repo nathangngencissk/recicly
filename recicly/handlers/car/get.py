@@ -1,7 +1,7 @@
 import json
 
 from utils.database import Database
-from model.driver import Car
+from model import Car
 
 
 def handle(event, context):

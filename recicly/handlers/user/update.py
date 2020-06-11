@@ -2,7 +2,7 @@ import json
 
 import requests
 
-from model.user import User
+from model import User
 from utils.database import Database
 
 

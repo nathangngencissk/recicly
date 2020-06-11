@@ -1,7 +1,7 @@
 import json
 
 from utils.database import Database
-from model.driver import Driver
+from model import Driver
 
 
 def handle(event, context):

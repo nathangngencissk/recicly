@@ -1,7 +1,7 @@
 import json
 
 from utils.database import Database
-from model.collector import Collector
+from model import Collector
 
 
 def handle(event, context):

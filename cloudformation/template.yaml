@@ -332,3 +332,74 @@ Resources:
             RestApiId: !Ref Api
             Path: /car/delete
             Method: delete
+
+  # Car
+  GetAllPartners:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-partners"
+      Handler: "handlers.partner.get_all.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /partner/get-all
+            Method: get
+
+  GetPartner:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-partner"
+      Handler: "handlers.partner.get.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /partner/get
+            Method: get
+
+  AddPartner:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-add-partner"
+      Handler: "handlers.partner.add.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /partner/add
+            Method: post
+
+  UpdatePartner:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-update-partner"
+      Handler: "handlers.partner.update.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /partner/update
+            Method: put
+
+  DeletePartner:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-delete-partner"
+      Handler: "handlers.partner.delete.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /partner/delete
+            Method: delete

@@ -2,7 +2,7 @@ import json
 
 import requests
 
-from model import User
+from model import Partner
 from utils.database import Database
 
 
@@ -11,16 +11,16 @@ def handle(event, context):
 
     id = body.get('id')
 
-    user = User(id=id)
+    partner = Partner(id=id)
 
     db = Database()
 
-    db.delete(user)
+    db.delete(partner)
 
     response = {
         'statusCode': 200,
         'body': json.dumps({
-            'msg': f'User with id {id} deleted successfully'
+            'msg': f'Partner with id {id} deleted successfully'
         }),
     }
 

@@ -2,7 +2,7 @@ import json
 
 import requests
 
-from model.driver import Driver
+from model import Driver
 from utils.database import Database
 
 

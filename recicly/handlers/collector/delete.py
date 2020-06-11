@@ -2,7 +2,7 @@ import json
 
 import requests
 
-from model.collector import Collector
+from model import Collector
 from utils.database import Database
 
 

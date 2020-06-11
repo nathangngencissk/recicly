@@ -2,7 +2,7 @@ import json
 
 from utils.database import Database
 from utils import object_to_dict
-from model.driver import Driver
+from model import Driver
 
 
 def handle(event, context):
