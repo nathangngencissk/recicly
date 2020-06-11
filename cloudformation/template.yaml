@@ -333,7 +333,7 @@ Resources:
             Path: /car/delete
             Method: delete
 
-  # Car
+  # Partner
   GetAllPartners:
     Type: "AWS::Serverless::Function"
     Properties:
@@ -402,4 +402,146 @@ Resources:
           Properties:
             RestApiId: !Ref Api
             Path: /partner/delete
+            Method: delete
+
+  # Product
+  GetAllProducts:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-products"
+      Handler: "handlers.product.get_all.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /product/get-all
+            Method: get
+
+  GetProduct:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-product"
+      Handler: "handlers.product.get.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /product/get
+            Method: get
+
+  AddProduct:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-add-product"
+      Handler: "handlers.product.add.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /product/add
+            Method: post
+
+  UpdateProduct:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-update-product"
+      Handler: "handlers.product.update.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /product/update
+            Method: put
+
+  DeleteProduct:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-delete-product"
+      Handler: "handlers.product.delete.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /product/delete
+            Method: delete
+
+  # Adress
+  GetAllAdresses:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-adresses"
+      Handler: "handlers.adress.get_all.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /adress/get-all
+            Method: get
+
+  GetAdress:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-adress"
+      Handler: "handlers.adress.get.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /adress/get
+            Method: get
+
+  AddAdress:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-add-adress"
+      Handler: "handlers.adress.add.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /adress/add
+            Method: post
+
+  UpdateAdress:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-update-adress"
+      Handler: "handlers.adress.update.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /adress/update
+            Method: put
+
+  DeleteAdress:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-delete-adress"
+      Handler: "handlers.adress.delete.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /adress/delete
             Method: delete
