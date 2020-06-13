@@ -91,9 +91,8 @@ class Database():
             session.query(table).filter(table.id == element.id).delete(
                 synchronize_session='evaluate')
 
-    def query(self, table, query):
-        with self.session() as session:
-            elements = [object_to_dict(
-                result) for result in session.query(table).filter(query)]
-            session.expunge_all()
-            return
+    def query(self, query):
+        with self.connect() as connection:
+            result_set = connection.execute(query)
+
+            return [result for result in result_set]

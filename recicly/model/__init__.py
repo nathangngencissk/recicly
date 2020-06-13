@@ -1,8 +1,11 @@
+import datetime
+
 from sqlalchemy import Table, Column, String, Boolean, Integer, MetaData, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 from utils.database import Database
+from utils import object_to_dict
 
 base = declarative_base()
 
@@ -21,6 +24,62 @@ class User(base):
     points = Column(Integer, default=0)
 
     adresses = relationship('Adress', lazy='subquery')
+
+    @classmethod
+    def authenticate(cls, email, password):
+        db = Database()
+        result = db.query(
+            f"SELECT * FROM users WHERE email = '{email}' AND password = '{password}'")
+
+        return {
+            'user': {} if len(result) == 0 else object_to_dict(User(**result[0])),
+            'msg': 'User not found' if len(result) == 0 else 'User authenticated successfully'
+        }
+
+    def get_requests(self, *args, **kwargs):
+        db = Database()
+        result_set = db.query(
+            f"SELECT * FROM requests WHERE id_user = {self.id}")
+        requests = []
+        for request in result_set:
+            requests.append({
+                'user': object_to_dict(self),
+                'driver': db.get(Driver, request.id_driver, as_dict=True),
+                'collector': db.get(Collector, request.id_collector, as_dict=True),
+                'status': request.status,
+                'points': request.points,
+                'weight': request.weight
+            })
+        return requests
+
+    def get_orders(self, *args, **kwargs):
+        db = Database()
+        result_set = db.query(
+            f"SELECT * FROM orders WHERE id_user = {self.id}")
+        orders = []
+        for order in result_set:
+            orders.append({
+                'user': object_to_dict(self),
+                'product': db.get(Product, order.id_product, as_dict=True),
+                'timestamp': order.timestamp
+            })
+        return orders
+
+    def exchange_points(self, product_id, *args, **kwargs):
+        db = Database()
+        product = db.get(Product, product_id)
+        if self.points < product.price:
+            return {
+                'msg': 'Insufficient points'
+            }
+        self.points -= product.price
+        db.update(self)
+        order = Order(id_user=self.id, id_product=product.id,
+                      timestamp=str(datetime.datetime.now().timestamp()))
+        db.add(order)
+        return {
+            'msg': f'{product.name} bought successfully'
+        }
 
 
 class Collector(base):
@@ -81,6 +140,45 @@ class Driver(base):
         for car in cars:
             car.pop('_sa_instance_state', None)
         return cars
+
+    @classmethod
+    def authenticate(cls, email, password):
+        db = Database()
+        result = db.query(
+            f"SELECT * FROM drivers WHERE email = '{email}' AND password = '{password}'")
+
+        return {
+            'driver': {} if len(result) == 0 else object_to_dict(Driver(**result[0])),
+            'msg': 'User not found' if len(result) == 0 else 'User authenticated successfully'
+        }
+
+    def get_requests(self, *args, **kwargs):
+        db = Database()
+        result_set = db.query(
+            f"SELECT * FROM requests WHERE id_driver = {self.id}")
+        requests = []
+        for request in result_set:
+            requests.append({
+                'user': db.get(User, request.id_user, as_dict=True),
+                'driver': object_to_dict(self),
+                'collector': db.get(Collector, request.id_collector, as_dict=True),
+                'status': request.status,
+                'points': request.points,
+                'weight': request.weight
+            })
+        return requests
+
+    def exchange_points(self, points_quantity, *args, **kwargs):
+        db = Database()
+        if self.points < points_quantity:
+            return {
+                'msg': 'Insufficient points'
+            }
+        self.points -= points_quantity
+        db.update(self)
+        return {
+            'msg': f'{points_quantity} exchanged successfully'
+        }
 
 
 class Car(base):

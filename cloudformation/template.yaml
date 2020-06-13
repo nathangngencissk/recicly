@@ -120,6 +120,34 @@ Resources:
             Path: /user/delete
             Method: delete
 
+  AuthenticateUser:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-authenticate-user"
+      Handler: "handlers.user.authenticate.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /user/authenticate
+            Method: post
+
+  GetUserAdresses:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-user-adresses"
+      Handler: "handlers.user.get_adresses.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /user/adresses
+            Method: get
+
   # Driver
   GetAllDrivers:
     Type: "AWS::Serverless::Function"
