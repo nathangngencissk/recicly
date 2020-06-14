@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 from utils.database import Database
-from utils import object_to_dict
+from utils import object_to_dict, generate_qrcode
 
 base = declarative_base()
 
@@ -81,6 +81,89 @@ class User(base):
             'msg': f'{product.name} bought successfully'
         }
 
+    def start_request(self, *args, **kwargs):
+        db = Database()
+        new_request = {
+            'id_user': self.id,
+            'status': Request.REQUEST_STATUS.get('new')
+        }
+
+        request = Request(**new_request)
+        db.add(request)
+
+        new_history = {
+            'id_request': request.id,
+            'new_status': Request.REQUEST_STATUS.get('new'),
+            'timestamp': str(datetime.datetime.now().timestamp())
+        }
+
+        history = History(**new_history)
+        db.add(history)
+
+        return {
+            'request': object_to_dict(request),
+            'msg': 'Request started successfully'
+        }
+
+    def contest_request(self, id_request, *args, **kwargs):
+        db = Database()
+        contested_request = {
+            'id': id_request,
+            'status': Request.REQUEST_STATUS.get('contested')
+        }
+        request = Request(**contested_request)
+        db.update(request)
+
+        new_history = {
+            'id_request': request.id,
+            'old_status': Request.REQUEST_STATUS.get('waiting_approval'),
+            'new_status': Request.REQUEST_STATUS.get('contested'),
+            'timestamp': str(datetime.datetime.now().timestamp())
+        }
+
+        history = History(**new_history)
+        db.add(history)
+
+        return {
+            'request': object_to_dict(request),
+            'msg': 'Request contested successfully'
+        }
+
+    def approve_request(self, id_request, *args, **kwargs):
+        db = Database()
+
+        approved_request = {
+            'id': id_request,
+            'status': Request.REQUEST_STATUS.get('approved')
+        }
+        request = Request(**approved_request)
+        db.update(request)
+
+        new_history = {
+            'id_request': request.id,
+            'old_status': Request.REQUEST_STATUS.get('waiting_approval'),
+            'new_status': Request.REQUEST_STATUS.get('approved'),
+            'timestamp': str(datetime.datetime.now().timestamp())
+        }
+
+        history = History(**new_history)
+        db.add(history)
+
+        updated_user = {
+            'id': self.id,
+            'points': self.points + db.get(Request, id_request).points
+        }
+        user = User(**updated_user)
+        db.update(user)
+
+        request.status = Request.REQUEST_STATUS.get('concluded')
+        db.update(request)
+
+        return {
+            'request': object_to_dict(request),
+            'msg': 'Request approved successfully'
+        }
+
 
 class Collector(base):
 
@@ -93,6 +176,51 @@ class Collector(base):
 
     adress = relationship("Adress", uselist=False,
                           back_populates="collector", lazy='subquery')
+
+    @classmethod
+    def authenticate(cls, email, password):
+        db = Database()
+        result = db.query(
+            f"SELECT * FROM collectors WHERE email = '{email}' AND password = '{password}'")
+
+        return {
+            'collector': {} if len(result) == 0 else object_to_dict(Collector(**result[0])),
+            'msg': 'User not found' if len(result) == 0 else 'User authenticated successfully'
+        }
+
+    def receive_request(self, *args, **kwargs):
+        receive_request_url = f'https://t67vqv0hkk.execute-api.us-east-1.amazonaws.com/Prod/collector/receive?id_collector={self.id}'
+        qr_code = generate_qrcode(receive_request_url)
+        return {
+            'qr_code': qr_code,
+            'msg': 'QR Code generated successfully'
+        }
+
+    def evaluate_request(self, id_request, weight, *args, **kwargs):
+        db = Database()
+        request_evaluated = {
+            'id': id_request,
+            'status': Request.REQUEST_STATUS.get('waiting_approval'),
+            'weight': weight,
+            'points': weight/5
+        }
+        request = Request(**request_evaluated)
+        db.update(request)
+
+        new_history = {
+            'id_request': request.id,
+            'old_status': Request.REQUEST_STATUS.get('evaluation'),
+            'new_status': Request.REQUEST_STATUS.get('waiting_approval'),
+            'timestamp': str(datetime.datetime.now().timestamp())
+        }
+
+        history = History(**new_history)
+        db.add(history)
+
+        return {
+            'request': object_to_dict(request),
+            'msg': 'Request evaluated successfully'
+        }
 
 
 class Adress(base):
@@ -180,6 +308,81 @@ class Driver(base):
             'msg': f'{points_quantity} exchanged successfully'
         }
 
+    def attend_request(self, id_request, *args, **kwargs):
+        db = Database()
+        attended_request = {
+            'id': id_request,
+            'id_driver': self.id,
+            'status': Request.REQUEST_STATUS.get('ongoing')
+        }
+        request = Request(**attended_request)
+        db.update(request)
+
+        new_history = {
+            'id_request': request.id,
+            'old_status': Request.REQUEST_STATUS.get('new'),
+            'new_status': Request.REQUEST_STATUS.get('ongoing'),
+            'timestamp': str(datetime.datetime.now().timestamp())
+        }
+
+        history = History(**new_history)
+        db.add(history)
+
+        return {
+            'request': object_to_dict(request),
+            'msg': 'Request attended successfully'
+        }
+
+    def abandon_request(self, id_request, *args, **kwargs):
+        db = Database()
+        attended_request = {
+            'id': id_request,
+            'id_driver': None,
+            'status': Request.REQUEST_STATUS.get('new')
+        }
+        request = Request(**attended_request)
+        db.update(request)
+
+        new_history = {
+            'id_request': request.id,
+            'old_status': Request.REQUEST_STATUS.get('ongoing'),
+            'new_status': Request.REQUEST_STATUS.get('new'),
+            'timestamp': str(datetime.datetime.now().timestamp())
+        }
+
+        history = History(**new_history)
+        db.add(history)
+
+        return {
+            'request': object_to_dict(request),
+            'msg': 'Request abandoned successfully'
+        }
+
+    def deliver_request(self, id_request, id_collector):
+        db = Database()
+        delivered_request = {
+            'id': id_request,
+            'id_collector': id_collector,
+            'status': Request.REQUEST_STATUS.get('evaluation')
+        }
+        request = Request(**delivered_request)
+        db.update(request)
+
+        new_history = {
+            'id_request': request.id,
+            'old_status': Request.REQUEST_STATUS.get('ongoing'),
+            'new_status': Request.REQUEST_STATUS.get('evaluation'),
+            'timestamp': str(datetime.datetime.now().timestamp())
+        }
+
+        history = History(**new_history)
+        db.add(history)
+
+        return {
+            'request': object_to_dict(request),
+            'msg': 'Request delivered successfully'
+        }
+
 
 class Car(base):
 
@@ -209,6 +412,9 @@ class Partner(base):
 
     products = relationship('Product', lazy='subquery')
 
+    def get_revenue(self):
+        pass
+
 
 class Product(base):
 
@@ -227,6 +433,18 @@ class Product(base):
 class Request(base):
 
     __tablename__ = 'requests'
+
+    REQUEST_STATUS = {
+        'new': 'NEW',
+        'ongoing': 'ONGOING',
+        'evaluation': 'EVALUATION',
+        'waiting_approval': 'WAITING APPROVAL',
+        'approved': 'APPROVED',
+        'contested': 'CONTESTED',
+        'admin_approved': 'ADMIN APPROVED',
+        'concluded': 'CONCLUDED',
+        'canceled': 'CANCELED'
+    }
 
     id = Column(Integer, primary_key=True)
     id_user = Column(Integer, ForeignKey('users.id'))

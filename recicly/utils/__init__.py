@@ -1,7 +1,13 @@
 import collections
+import os
+import uuid
 
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+
+import boto3
+import qrcode
+from PIL import Image
 
 
 def object_to_dict(element):
@@ -91,3 +97,40 @@ def formatter(object):
     else:
 
         return object
+
+
+def generate_qrcode(data):
+
+    img = qrcode.make(data)
+    qrcode_id = uuid.uuid4()
+    filename = f'{str(qrcode_id)}.png'
+
+    img.save(f'/tmp/{filename}')
+
+    bucket = boto3.resource('s3').Bucket(os.environ['QRCODEBUCKET'])
+
+    try:
+        bucket.upload_file(
+            Key=filename,
+            Filename=f'/tmp/{filename}'
+        )
+        return f'https://recicly-qr-code-images.s3.amazonaws.com/{filename}'
+    except Exception as e:
+        print(e)
+
+
+def upload_picture(picture, folder):
+    filename = f'{str(uuid.uuid4())}.png'
+
+    # TODO save picture file on /tmp/
+
+    bucket = boto3.resource('s3').Bucket(os.environ['PICTURESBUCKET'])
+
+    try:
+        bucket.upload_file(
+            Key=f'{folder}/{filename}',
+            Filename=f'/tmp/{filename}'
+        )
+        return f'https://recicly-pictures.s3.amazonaws.com/{folder}/{filename}'
+    except Exception as e:
+        print(e)

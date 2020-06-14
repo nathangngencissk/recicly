@@ -15,6 +15,8 @@ Globals:
         ACCOUNT_ID: !Ref AWS::AccountId
         PASSWORD: "{{resolve:ssm:/recicly/rds/password:1}}"
         URL: "{{resolve:ssm:/recicly/rds/url:1}}"
+        QRCODEBUCKET: !Ref QrCodeBucket
+        PICTURESBUCKET: !Ref PicturesBucket
 
 Resources:
   # IAM
@@ -49,11 +51,51 @@ Resources:
     Properties:
       StageName: "Prod"
 
+  # QR Code Bucket
+  QrCodeBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "recicly-qr-code-images"
+
+  QrCodeBucketAllowPublicReadPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref QrCodeBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "s3:GetObject"
+            Resource:
+              - !Join ["/", [!GetAtt QrCodeBucket.Arn, "*"]]
+            Principal: "*"
+
+  # Pictures Bucket
+  PicturesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "recicly-pictures"
+
+  PicturesBucketAllowPublicReadPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref PicturesBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "s3:GetObject"
+            Resource:
+              - !Join ["/", [!GetAtt PicturesBucket.Arn, "*"]]
+            Principal: "*"
+
   # User
-  GetAllUsers:
+  GetUsers:
     Type: "AWS::Serverless::Function"
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-get-users"
+      FunctionName: !Sub "${AWS::StackName}-get-all-users"
       Handler: "handlers.user.get_all.handle"
       Role: !GetAtt ExecutionRole.Arn
       Events:
