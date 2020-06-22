@@ -57,10 +57,14 @@ class Database():
 
     def get(self, table, id, as_dict=False):
         with self.session() as session:
-            element = object_to_dict(session.query(table).get(
-                id)) if as_dict else session.query(table).get(id)
+            element = session.query(table).get(
+                id)
             session.expunge_all()
-            return element
+            if element and as_dict:
+                return object_to_dict(element)
+            elif element and not as_dict:
+                return element
+            return None
 
     def add(self, element):
         with self.session() as session:

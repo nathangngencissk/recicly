@@ -43,6 +43,7 @@ class User(base):
         requests = []
         for request in result_set:
             requests.append({
+                'id': request.id,
                 'user': object_to_dict(self),
                 'driver': db.get(Driver, request.id_driver, as_dict=True),
                 'collector': db.get(Collector, request.id_collector, as_dict=True),

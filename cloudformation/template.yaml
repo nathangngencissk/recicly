@@ -50,6 +50,9 @@ Resources:
     Type: "AWS::Serverless::Api"
     Properties:
       StageName: "Prod"
+      Cors:
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
 
   # QR Code Bucket
   QrCodeBucket:
@@ -189,6 +192,48 @@ Resources:
             RestApiId: !Ref Api
             Path: /user/adresses
             Method: get
+
+  GetUserRequests:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-user-requests"
+      Handler: "handlers.user.get_requests.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /user/requests
+            Method: get
+
+  UserStartRequest:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-user-start-request"
+      Handler: "handlers.user.start_request.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /user/start-request
+            Method: post
+
+  GetUserOrders:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-user-orders"
+      Handler: "handlers.user.get_orders.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /user/orders
+            Method: post
 
   # Driver
   GetAllDrivers:

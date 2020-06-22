@@ -3,18 +3,19 @@ import json
 import requests
 
 from model import User
+from utils.database import Database
 
 
 def handle(event, context):
     body = json.loads(event.get('body'))
 
-    email = body.get('email')
-    password = body.get('password')
+    id = body.get('id')
 
-    result = User.authenticate(email, password)
+    db = Database()
 
-    print(event)
-    print(result)
+    user = db.get(User, id)
+
+    result = user.start_request()
 
     response = {
         'statusCode': 200,

@@ -9,9 +9,9 @@ def handle(event, context):
     db = Database()
     products = []
 
-    for product in db.get_all(Product, as_dict=True):
+    for product in db.get_all(Product):
         products.append({
-            'product': product,
+            'product': object_to_dict(product),
             'partner': object_to_dict(product.partner)
         })
 
