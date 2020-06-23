@@ -14,7 +14,7 @@ def handle(event, context):
 
     db = Database()
 
-    user = db.get(User, id)
+    user = db.get(User, user_id)
 
     result = user.start_request(address_id)
 
