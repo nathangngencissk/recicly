@@ -235,6 +235,20 @@ Resources:
             Path: /user/orders
             Method: post
 
+  UserBuy:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-user-buy"
+      Handler: "handlers.user.buy.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /user/buy
+            Method: post
+
   # Driver
   GetAllDrivers:
     Type: "AWS::Serverless::Function"
@@ -306,6 +320,76 @@ Resources:
             Path: /driver/delete
             Method: delete
 
+  AuthenticateDriver:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-authenticate-driver"
+      Handler: "handlers.driver.authenticate.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /driver/authenticate
+            Method: post
+
+  GetDriverRequests:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-driver-requests"
+      Handler: "handlers.driver.get_requests.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /driver/requests
+            Method: get
+
+  GetNewRequests:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-new-requests"
+      Handler: "handlers.request.get_new_requests.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /request/new
+            Method: get
+
+  DriverStartDelivery:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-driver-start-delivery"
+      Handler: "handlers.driver.start_delivery.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /driver/start-delivery
+            Method: post
+
+  DriverDeliver:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-driver-deliver"
+      Handler: "handlers.driver.deliver.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /driver/deliver
+            Method: post
+
   # Collector
   GetAllCollectors:
     Type: "AWS::Serverless::Function"
@@ -333,6 +417,20 @@ Resources:
           Properties:
             RestApiId: !Ref Api
             Path: /collector/get
+            Method: get
+
+  GetCollectorCode:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-collector-code"
+      Handler: "handlers.collector.get_code.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /collector/get-code
             Method: get
 
   AddCollector:

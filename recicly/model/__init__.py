@@ -42,6 +42,11 @@ class User(base):
             f"SELECT * FROM requests WHERE id_user = {self.id}")
         requests = []
         for request in result_set:
+            last_change = db.query(
+                f"SELECT * FROM history WHERE id_request = {request.id}")
+
+            last_ts = last_change[-1][-1] if len(last_change) > 0 else None
+
             requests.append({
                 'id': request.id,
                 'user': object_to_dict(self),
@@ -49,7 +54,8 @@ class User(base):
                 'collector': db.get(Collector, request.id_collector, as_dict=True),
                 'status': request.status,
                 'points': request.points,
-                'weight': request.weight
+                'weight': request.weight,
+                'timestamp': last_ts
             })
         return requests
 
@@ -73,8 +79,8 @@ class User(base):
             return {
                 'msg': 'Insufficient points'
             }
-        self.points -= product.price
-        db.update(self)
+        user = User(**{'id': self.id, 'points': self.points - product.price})
+        db.update(user)
         order = Order(id_user=self.id, id_product=product.id,
                       timestamp=str(datetime.datetime.now().timestamp()))
         db.add(order)
@@ -82,10 +88,11 @@ class User(base):
             'msg': f'{product.name} bought successfully'
         }
 
-    def start_request(self, *args, **kwargs):
+    def start_request(self, address_id, *args, **kwargs):
         db = Database()
         new_request = {
             'id_user': self.id,
+            'id_address': address_id,
             'status': Request.REQUEST_STATUS.get('new')
         }
 
@@ -174,6 +181,7 @@ class Collector(base):
     name = Column(String)
     email = Column(String)
     password = Column(String)
+    points = Column(Integer, default=0)
 
     adress = relationship("Adress", uselist=False,
                           back_populates="collector", lazy='subquery')
@@ -187,6 +195,20 @@ class Collector(base):
         return {
             'collector': {} if len(result) == 0 else object_to_dict(Collector(**result[0])),
             'msg': 'User not found' if len(result) == 0 else 'User authenticated successfully'
+        }
+
+    @classmethod
+    def get_from_code(cls, delivery_code):
+        db = Database()
+        result_set = db.query(
+            f"SELECT * FROM delivery_codes WHERE code = '{delivery_code}'")
+
+        search_collector = db.query(
+            f"SELECT * FROM collectors WHERE id = {result_set[0][1]}")
+
+        return {
+            'collector': {} if len(search_collector) == 0 else object_to_dict(Collector(**search_collector[0])),
+            'msg': 'Collector not found' if len(search_collector) == 0 else 'Collector found successfully'
         }
 
     def receive_request(self, *args, **kwargs):
@@ -258,6 +280,7 @@ class Driver(base):
     drivers_license = Column(String)
     profile_picture = Column(String)
     points = Column(Integer, default=0)
+    current_request = Column(Integer)
 
     cars = relationship('Car', back_populates='driver', lazy='subquery')
 
@@ -287,13 +310,20 @@ class Driver(base):
             f"SELECT * FROM requests WHERE id_driver = {self.id}")
         requests = []
         for request in result_set:
+            last_change = db.query(
+                f"SELECT * FROM history WHERE id_request = {request.id}")
+
+            last_ts = last_change[-1][-1] if len(last_change) > 0 else None
+
             requests.append({
+                'id': request.id,
                 'user': db.get(User, request.id_user, as_dict=True),
                 'driver': object_to_dict(self),
                 'collector': db.get(Collector, request.id_collector, as_dict=True),
                 'status': request.status,
                 'points': request.points,
-                'weight': request.weight
+                'weight': request.weight,
+                'timestamp': last_ts
             })
         return requests
 
@@ -318,6 +348,9 @@ class Driver(base):
         }
         request = Request(**attended_request)
         db.update(request)
+
+        driver = Driver(**{'id': self.id, 'current_request': id_request})
+        db.update(driver)
 
         new_history = {
             'id_request': request.id,
@@ -359,8 +392,11 @@ class Driver(base):
             'msg': 'Request abandoned successfully'
         }
 
-    def deliver_request(self, id_request, id_collector):
+    def deliver_request(self, id_request, delivery_code):
         db = Database()
+        code_search = db.query(
+            f"SELECT * FROM delivery_codes WHERE code = '{delivery_code}'")
+        id_collector = code_search[0][1]
         delivered_request = {
             'id': id_request,
             'id_collector': id_collector,
@@ -368,6 +404,9 @@ class Driver(base):
         }
         request = Request(**delivered_request)
         db.update(request)
+
+        driver = Driver(**{'id': self.id, 'current_request': None})
+        db.update(driver)
 
         new_history = {
             'id_request': request.id,
@@ -451,6 +490,7 @@ class Request(base):
     id_user = Column(Integer, ForeignKey('users.id'))
     id_driver = Column(Integer, ForeignKey('drivers.id'))
     id_collector = Column(Integer, ForeignKey('collectors.id'))
+    id_address = Column(Integer, ForeignKey('adresses.id'))
     status = Column(String)
     points = Column(Integer, default=0)
     weight = Column(Integer)
@@ -461,6 +501,26 @@ class Request(base):
         'Driver', lazy='subquery')
     collector = relationship(
         'Collector', lazy='subquery')
+
+    @ classmethod
+    def get_new_requests(cls, *args, **kwargs):
+        db = Database()
+        result_set = db.query(
+            f"SELECT * FROM requests WHERE status = 'NEW'")
+        new_requests = []
+        for request in result_set:
+            user_search = db.query(
+                f"SELECT * FROM users WHERE id = {request.id_user}")
+            user = user_search[0]
+            address_search = db.query(
+                f"SELECT * FROM adresses WHERE id = {request.id_address}")
+            address = address_search[0]
+            new_requests.append({
+                'request': object_to_dict(Request(**request)),
+                'user': object_to_dict(User(**user)),
+                'address': object_to_dict(Adress(**address))
+            })
+        return new_requests
 
 
 class History(base):

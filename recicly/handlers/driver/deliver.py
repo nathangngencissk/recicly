@@ -2,21 +2,22 @@ import json
 
 import requests
 
-from model import User
+from model import Driver
 from utils.database import Database
 
 
 def handle(event, context):
     body = json.loads(event.get('body'))
 
-    user_id = body.get('user_id')
-    address_id = body.get('address_id')
+    code = body.get('code')
+    id_driver = body.get('id_driver')
+    id_request = body.get('id_request')
 
     db = Database()
 
-    user = db.get(User, id)
+    driver = db.get(Driver, id_driver)
 
-    result = user.start_request(address_id)
+    result = driver.deliver_request(id_request=id_request, delivery_code=code)
 
     response = {
         'statusCode': 200,

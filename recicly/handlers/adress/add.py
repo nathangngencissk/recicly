@@ -9,7 +9,7 @@ from utils.database import Database
 def handle(event, context):
     body = json.loads(event.get('body'))
 
-    adress = Product(**body)
+    adress = Adress(**body)
 
     db = Database()
 

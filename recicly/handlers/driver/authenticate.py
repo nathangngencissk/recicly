@@ -2,7 +2,7 @@ import json
 
 import requests
 
-from model import User
+from model import Driver
 
 
 def handle(event, context):
@@ -11,7 +11,7 @@ def handle(event, context):
     email = body.get('email')
     password = body.get('password')
 
-    result = User.authenticate(email, password)
+    result = Driver.authenticate(email, password)
 
     response = {
         'statusCode': 200,
