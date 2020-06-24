@@ -475,6 +475,62 @@ Resources:
             Path: /collector/delete
             Method: delete
 
+  AuthenticateCollector:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-authenticate-collector"
+      Handler: "handlers.collector.authenticate.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /collector/authenticate
+            Method: post
+
+  GetRequestsInEvaluation:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-get-requests-in-evaluation"
+      Handler: "handlers.request.get_requests_in_evaluation.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /request/evaluation
+            Method: get
+
+  CollectorReceiveRequest:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-collector-receive-request"
+      Handler: "handlers.collector.receive_request.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /collector/receive-request
+            Method: post
+
+  CollectorEvaluateRequest:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-collector-evaluate-request"
+      Handler: "handlers.collector.evaluate_request.handle"
+      Role: !GetAtt ExecutionRole.Arn
+      Events:
+        ApiEnpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /collector/evaluate-request
+            Method: post
+
   # Car
   GetAllCars:
     Type: "AWS::Serverless::Function"

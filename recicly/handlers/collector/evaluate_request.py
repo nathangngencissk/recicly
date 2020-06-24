@@ -9,13 +9,15 @@ from utils.database import Database
 def handle(event, context):
     body = json.loads(event.get('body'))
 
-    collector = Collector(**body)
+    collector_id = body.get('collector_id')
+    request_id = body.get('request_id')
+    weight = body.get('weight')
 
     db = Database()
 
-    db.add(collector)
+    collector = db.get(Collector, collector_id)
 
-    collector.__dict__.pop('_sa_instance_state')
+    response = collector.evaluate_request(id_request=request_id, weight=weight)
 
     response = {
         'statusCode': 200,
@@ -23,10 +25,7 @@ def handle(event, context):
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Credentials': True
         },
-        'body': json.dumps({
-            'collector': collector.__dict__,
-            'msg': f'Collector {collector.id} added successfully'
-        }),
+        'body': json.dumps(response),
     }
 
     return response

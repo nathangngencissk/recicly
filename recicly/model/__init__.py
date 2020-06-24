@@ -1,4 +1,5 @@
 import datetime
+import uuid
 
 from sqlalchemy import Table, Column, String, Boolean, Integer, MetaData, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
@@ -164,6 +165,18 @@ class User(base):
         user = User(**updated_user)
         db.update(user)
 
+        req = db.get(Request, id_request)
+        id_driver = req.id_driver
+
+        drv = db.get(Driver, id_driver)
+
+        updated_driver = {
+            'id': id_driver,
+            'points': drv.points + (req.points / 2)
+        }
+        driver = Driver(**updated_driver)
+        db.update(driver)
+
         request.status = Request.REQUEST_STATUS.get('concluded')
         db.update(request)
 
@@ -211,19 +224,29 @@ class Collector(base):
             'msg': 'Collector not found' if len(search_collector) == 0 else 'Collector found successfully'
         }
 
+    def generate_delivery_code(self, *args, **kwargs):
+        delivery_code = str(uuid.uuid4()).replace('-', '')[2:8]
+        return delivery_code
+
     def receive_request(self, *args, **kwargs):
-        receive_request_url = f'https://t67vqv0hkk.execute-api.us-east-1.amazonaws.com/Prod/collector/receive?id_collector={self.id}'
-        qr_code = generate_qrcode(receive_request_url)
+        code = self.generate_delivery_code()
+
+        db = Database()
+
+        delivery_code = DeliveryCode(**{'collector_id': self.id, 'code': code})
+
+        db.add(delivery_code)
+
         return {
-            'qr_code': qr_code,
-            'msg': 'QR Code generated successfully'
+            'delivery_code': object_to_dict(delivery_code),
+            'msg': 'Delivery code generated successfully'
         }
 
     def evaluate_request(self, id_request, weight, *args, **kwargs):
         db = Database()
         request_evaluated = {
             'id': id_request,
-            'status': Request.REQUEST_STATUS.get('waiting_approval'),
+            'status': Request.REQUEST_STATUS.get('concluded'),
             'weight': weight,
             'points': weight/5
         }
@@ -233,17 +256,44 @@ class Collector(base):
         new_history = {
             'id_request': request.id,
             'old_status': Request.REQUEST_STATUS.get('evaluation'),
-            'new_status': Request.REQUEST_STATUS.get('waiting_approval'),
+            'new_status': Request.REQUEST_STATUS.get('concluded'),
             'timestamp': str(datetime.datetime.now().timestamp())
         }
 
         history = History(**new_history)
         db.add(history)
 
+        req = db.get(Request, id_request)
+
+        us = db.get(User, req.id_user)
+        updated_user = {
+            'id': us.id,
+            'points': us.points + req.points
+        }
+        user = User(**updated_user)
+        db.update(user)
+
+        drv = db.get(Driver, req.id_driver)
+
+        updated_driver = {
+            'id': req.id_driver,
+            'points': drv.points + (req.points / 2)
+        }
+        driver = Driver(**updated_driver)
+        db.update(driver)
+
         return {
             'request': object_to_dict(request),
             'msg': 'Request evaluated successfully'
         }
+
+
+class DeliveryCode(base):
+    __tablename__ = 'delivery_codes'
+
+    id = Column(Integer, primary_key=True)
+    collector_id = Column(Integer, ForeignKey('collectors.id'))
+    code = Column(String)
 
 
 class Adress(base):
@@ -408,6 +458,9 @@ class Driver(base):
         driver = Driver(**{'id': self.id, 'current_request': None})
         db.update(driver)
 
+        dc = db.get(DeliveryCode, code_search[0][0])
+        db.delete(dc)
+
         new_history = {
             'id_request': request.id,
             'old_status': Request.REQUEST_STATUS.get('ongoing'),
@@ -507,6 +560,26 @@ class Request(base):
         db = Database()
         result_set = db.query(
             f"SELECT * FROM requests WHERE status = 'NEW'")
+        new_requests = []
+        for request in result_set:
+            user_search = db.query(
+                f"SELECT * FROM users WHERE id = {request.id_user}")
+            user = user_search[0]
+            address_search = db.query(
+                f"SELECT * FROM adresses WHERE id = {request.id_address}")
+            address = address_search[0]
+            new_requests.append({
+                'request': object_to_dict(Request(**request)),
+                'user': object_to_dict(User(**user)),
+                'address': object_to_dict(Adress(**address))
+            })
+        return new_requests
+
+    @ classmethod
+    def get_requests_in_evaluation(cls, *args, **kwargs):
+        db = Database()
+        result_set = db.query(
+            f"SELECT * FROM requests WHERE status = 'EVALUATION'")
         new_requests = []
         for request in result_set:
             user_search = db.query(
